@@ -30,11 +30,11 @@ import hudson.Util;
 import hudson.Functions;
 import hudson.model.*;
 import hudson.scm.ChangeLogSet;
-import jenkins.model.URLFactory;
 import jenkins.plugins.mailer.tasks.i18n.Messages;
 import jenkins.model.Jenkins;
 import jenkins.plugins.mailer.tasks.MailAddressFilter;
 import jenkins.plugins.mailer.tasks.MimeMessageBuilder;
+import org.jenkinsci.plugins.displayurlapi.DisplayURLProvider;
 
 import javax.mail.Address;
 import javax.mail.MessagingException;
@@ -201,7 +201,7 @@ public class MailSender {
     private MimeMessage createBackToNormalMail(Run<?, ?> run, String subject, TaskListener listener) throws MessagingException, UnsupportedEncodingException {
         MimeMessage msg = createEmptyMail(run, listener);
         msg.setSubject(getSubject(run, Messages.MailSender_BackToNormalMail_Subject(subject)),charset);
-        msg.setText(URLFactory.get().getRunURL(run),charset);
+        msg.setText(DisplayURLProvider.get().getRunURL(run),charset);
         return msg;
     }
 
@@ -231,13 +231,13 @@ public class MailSender {
         }
 
         msg.setSubject(getSubject(run, subject),charset);
-        URLFactory urlFactory = URLFactory.get();
+        DisplayURLProvider displayURLProvider = DisplayURLProvider.get();
         // Link to project changes summary for "still unstable" if this or last run has changes
         String url;
         if (still && !(getChangeSet(run).isEmptySet() && getChangeSet(prev).isEmptySet()))
-            url = urlFactory.getChangesURL(run);
+            url = displayURLProvider.getChangesURL(run);
         else
-            url = urlFactory.getRunURL(run);
+            url = displayURLProvider.getRunURL(run);
         msg.setText(url, charset);
 
         return msg;
@@ -249,7 +249,7 @@ public class MailSender {
         msg.setSubject(getSubject(run, Messages.MailSender_FailureMail_Subject()),charset);
 
         StringBuilder buf = new StringBuilder();
-        buf.append(URLFactory.get().getRunURL(run));
+        buf.append(DisplayURLProvider.get().getRunURL(run));
 
         boolean firstChange = true;
         for (ChangeLogSet.Entry entry : getChangeSet(run)) {
